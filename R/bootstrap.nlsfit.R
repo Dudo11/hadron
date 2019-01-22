@@ -1,6 +1,7 @@
 #' Parametric bootstrap
 #' 
-#' A function to create pseudo bootstrap samples which depends on the following variables:
+#' A function to create a specified number of pseudo bootstrap samples
+#' which is called in the fit function parametric.nlsfit().
 #'
 #' @param boot.R numeric. Number of bootstrap samples to generate.
 #' @param x numeric vector. Actual values for the data.
@@ -30,6 +31,9 @@ parametric.bootstrap <- function (boot.R, x, dx) {
 }
 
 #' Parametric bootstrap with covariance
+#' 
+#' A function to create a specified number of bootstrap samples for a given covariance matrix
+#' which is called in the fit function parametric.nlsfit.cov().
 #'
 #' @param boot.R numeric. Number of bootstrap samples to generate.
 #' @param x numeric vector. Actual values for the data.
@@ -74,7 +78,8 @@ parametric.bootstrap.cov <- function (boot.R, x, cov) {
 
 #' NLS fit with parametric bootstrap
 #' 
-#' A function to perform the NLS fit if the covariance matrix is not given. The bootstrap samples are generated via parametric.bootstrap()
+#' A function to perform the NLS fit if the covariance matrix is not given.
+#' The bootstrap samples are generated via parametric.bootstrap().
 #'
 #' @export
 #' @family NLS fit functions
@@ -111,6 +116,9 @@ parametric.nlsfit <- function (fn, par.guess, boot.R, y, dy, x, dx, ...) {
 }
 
 #' NLS fit with parametric bootstrap and covariance
+#'
+#' A function to perform the NLS fit if the covariance matrix is given.
+#' The bootstrap samples are generated via parametric.bootstrap.cov().
 #'
 #' @export
 #' @family NLS fit functions
