@@ -253,8 +253,6 @@ bootstrap.nlsfit <- function(fn,
   } else {
     stop("The provided bootstrap samples do not match the number of data points with errors. Make sure that the number of columns is either the length of `y` alone for just y-errors or the length of `y` and `x` for xy-errors.")
   }
-
-  nx <- length(x)
   
   ## generate bootstrap samples if needed
   ## and invert covariance matrix, if applicable
@@ -314,7 +312,9 @@ bootstrap.nlsfit <- function(fn,
       }
     }
   }
-
+  
+  len_x <- length(x)
+  
   ## add original data as first row
   bsamples <- rbind(V, bsamples)
 
@@ -328,7 +328,7 @@ bootstrap.nlsfit <- function(fn,
       fitchi <- function(y, par) { dY * (y - fn(par=par, x=x, ...)) }
     }
   }else{
-    ipx <- length(par.Guess)-seq(nx-1,0)
+    ipx <- length(par.Guess)-seq(len_x - 1, 0)
     if(useCov){
       fitchi <- function(y, par) { dY %*% (y - c(fn(par=par[-ipx], x=par[ipx], ...), par[ipx])) }
     }else{
@@ -352,8 +352,8 @@ bootstrap.nlsfit <- function(fn,
       }
     }else{
       jacobian <- function(par) {
-        df.dpar <- rbind(gr(par=par[-ipx], x=par[ipx], ...), array(0,dim=c(nx,length(par.guess))))
-        df.dx <- rbind(diag(dfn(par=par[-ipx], x=par[ipx], ...)), diag(1,nx))
+        df.dpar <- rbind(gr(par=par[-ipx], x=par[ipx], ...), array(0,dim=c(len_x, length(par.guess))))
+        df.dx <- rbind(diag(dfn(par=par[-ipx], x=par[ipx], ...)), diag(1, len_x))
         return(cbind(df.dpar, df.dx))
       }
       if(useCov){
@@ -430,7 +430,7 @@ bootstrap.nlsfit <- function(fn,
 
   errors <- apply(par.boot[rr, , drop=FALSE], 2, error, na.rm = TRUE)
 
-  res <- list(y=y, dy=dy, x=x, nx=nx,
+  res <- list(y=y, dy=dy, x=x, len_x=len_x,
               fn=fn, par.guess=par.guess, boot.R=boot.R,
               bsamples=bsamples[rr, ],
               errormodel=errormodel,
