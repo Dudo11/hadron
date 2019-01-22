@@ -236,17 +236,18 @@ bootstrap.nlsfit <- function(fn,
   if (parallel) {
     parallel <- require(parallel)
   }
-
+  
+  ## introduce vector crr that includes the indices of the median as well as the bootstrap samples
   crr <- c(1:(boot.R+1))
   rr <- c(2:(boot.R+1))
 
-  ## cast y and dy to Y and dY, respectively
+  ## introduce vector V that contains the original data values by casting y and c(y,x) to V, respectively
   if (ncol(bsamples) == length(y)) {
-    Y <- y
+    V <- y
     par.Guess <- par.guess
     errormodel <- "yerrors"
   } else if (ncol(bsamples) == length(y) + length(x)) {
-    Y <- c(y, x)
+    V <- c(y, x)
     par.Guess <- c(par.guess, x)
     errormodel <- "xyerrors"
   } else {
@@ -315,7 +316,7 @@ bootstrap.nlsfit <- function(fn,
   }
 
   ## add original data as first row
-  bsamples <- rbind(Y, bsamples)
+  bsamples <- rbind(V, bsamples)
 
   ## define the chi-vector, the sum of squares of which has to be minimized
   ## the definitions depend on the errormodel and the use of covariance
@@ -342,7 +343,7 @@ bootstrap.nlsfit <- function(fn,
     dfitchi <- NULL
     dfitchisqr <- NULL
   }else{
-    ## the format of gr has to be nrows=length(par), ncols=length(Y)
+    ## the format of gr has to be nrows=length(par), ncols=length(V)
     if(errormodel == "yerrors"){
       if(useCov){
         dfitchi <- function(par, ...) { -dY %*% gr(par=par, x=x, ...) }
@@ -389,7 +390,7 @@ bootstrap.nlsfit <- function(fn,
   }
 
   ## now the actual fit is performed
-  first.res <- wrapper(Y, par.Guess)[1:(length(par.Guess))]
+  first.res <- wrapper(V, par.Guess)[1:(length(par.Guess))]
 
   if (parallel)
     my.lapply <- mclapply
