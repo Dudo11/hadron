@@ -1,4 +1,6 @@
 #' Parametric bootstrap
+#' 
+#' A function to create pseudo bootstrap samples which depends on the following variables:
 #'
 #' @param boot.R numeric. Number of bootstrap samples to generate.
 #' @param x numeric vector. Actual values for the data.
@@ -71,6 +73,8 @@ parametric.bootstrap.cov <- function (boot.R, x, cov) {
 }
 
 #' NLS fit with parametric bootstrap
+#' 
+#' A function to perform the NLS fit if the covariance matrix is not given. The bootstrap samples are generated via parametric.bootstrap()
 #'
 #' @export
 #' @family NLS fit functions
@@ -254,13 +258,12 @@ bootstrap.nlsfit <- function(fn,
     stop("The provided bootstrap samples do not match the number of data points with errors. Make sure that the number of columns is either the length of `y` alone for just y-errors or the length of `y` and `x` for xy-errors.")
   }
   
-  ## generate bootstrap samples if needed
-  ## and invert covariance matrix, if applicable
+  ## invert covariance matrix, if applicable
   if (useCov) {
     if (!missing(dx) || !missing(dy)) {
       stop('Specifying a covariance matrix and `dx` and `dy` does not make sense, use either.')
     }
-
+    
     inversion.worked <- function(InvCovMatrix) {
       if (inherits(InvCovMatrix, "try-error")) {
         stop("Variance-covariance matrix could not be inverted!")
