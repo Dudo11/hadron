@@ -238,10 +238,13 @@ bootstrap.nlsfit <- function(fn,
                              par.guess,
                              y,
                              x,
+                             p, ## parameter vector that includes the parameter results t0 from aprevious fit.
                              bsamples,
+                             psamples, ## parameter array which is the t array from a previous fit result
                              ...,
                              dy,
                              dx,
+                             #dp, ## the error vector se from a previous fit
                              CovMatrix,
                              gr,
                              dfn,
@@ -251,12 +254,17 @@ bootstrap.nlsfit <- function(fn,
                              cov_fn = cov) {
   stopifnot(!missing(y))
   stopifnot(!missing(x))
+  stopifnot(!missing(p))
   stopifnot(!missing(par.guess))
   stopifnot(!missing(fn))
   stopifnot(!missing(bsamples))
+  stopifnot(!missing(psamples))
 
   boot.R <- nrow(bsamples)
+  nps <- nrow(psamples)
   useCov <- !missing(CovMatrix)
+  
+  stopifnot(boot.R == nps)
 
   if (use.minpack.lm) {
     lm.avail <- requireNamespace('minpack.lm')
@@ -271,7 +279,7 @@ bootstrap.nlsfit <- function(fn,
   crr <- c(1:(boot.R+1))
   rr <- c(2:(boot.R+1))
 
-  ## cast y and dy to Y and dY, respectively
+  ## cast y and dy to Y and W, respectively
   if (ncol(bsamples) == length(y)) {
     Y <- y
     par.Guess <- par.guess
@@ -286,59 +294,66 @@ bootstrap.nlsfit <- function(fn,
 
   nx <- length(x)
   
+  ## Build a samplem-atrix by attaching the psample-matrix to the bsample-matrix.
+  smatrix <- cbind(bsamples, psamples)
+  
   ## generate bootstrap samples if needed
   ## and invert covariance matrix, if applicable
-  if (useCov) {
-    if (!missing(dx) || !missing(dy)) {
-      stop('Specifying a covariance matrix and `dx` and `dy` does not make sense, use either.')
-    }
-
-    inversion.worked <- function(InvCovMatrix) {
-      if (inherits(InvCovMatrix, "try-error")) {
-        stop("Variance-covariance matrix could not be inverted!")
-      }
-    }
-
-    if (missing(CovMatrix)) {
-      InvCovMatrix <- try(invertCovMatrix(bsamples, boot.l = 1, boot.samples = TRUE, cov_fn = cov_fn), silent = TRUE)
-      inversion.worked(InvCovMatrix)
-      dY <- chol(InvCovMatrix)
-    } else {
-      CholCovMatrix <- chol(CovMatrix)
-      InvCovMatrix <- try(solve(CholCovMatrix), silent = TRUE)
-      inversion.worked(InvCovMatrix)
-      dY <- t(InvCovMatrix)
-    }
-
-    dydx <- 1.0 / diag(dY)
-
-    if (errormodel == 'yerrors') {
-      dy <- dydx
-    } else {
-      dy <- dydx[1:length(y)]
-      dx <- dydx[(length(y)+1):length(dydx)]
-    }
-  }
+   if (useCov) {
+  #   if (!missing(dx) || !missing(dy)) {
+  #     stop('Specifying a covariance matrix and `dx` and `dy` does not make sense, use either.')
+  #   }
+  # 
+  #   inversion.worked <- function(InvCovMatrix) {
+  #     if (inherits(InvCovMatrix, "try-error")) {
+  #       stop("Variance-covariance matrix could not be inverted!")
+  #     }
+  #   }
+  # 
+  #   if (missing(CovMatrix)) {
+  #     InvCovMatrix <- try(invertCovMatrix(bsamples, boot.l = 1, boot.samples = TRUE, cov_fn = cov_fn), silent = TRUE)
+  #     inversion.worked(InvCovMatrix)
+  #     W <- chol(InvCovMatrix)
+  #   } else {
+  #     CholCovMatrix <- chol(CovMatrix)
+  #     InvCovMatrix <- try(solve(CholCovMatrix), silent = TRUE)
+  #     inversion.worked(InvCovMatrix)
+  #     W <- t(InvCovMatrix)
+  #   }
+  # 
+  #   dydx <- 1.0 / diag(W)
+  # 
+  #   if (errormodel == 'yerrors') {
+  #     dy <- dydx
+  #   } else {
+  #     dy <- dydx[1:length(y)]
+  #     dx <- dydx[(length(y)+1):length(dydx)]
+  #   }
+   }
   else {
     ## The user did not specify the errors, therefore we simply compute them.
     if (missing(dx) && missing(dy)) {
-      dydx <- apply(bsamples, 2, error)
-      dY <- 1.0 / dydx
+      serrors <- apply(smatrix, 2, error)
+      yerrors <- apply(bsamples, 2, error)
+      perrors <- apply(psamples, 2, error)
+      
+      W <- 1.0 / serrors
 
       if (errormodel == 'yerrors') {
-        dy <- dydx
+        dy <- yerrors
+        dp <- perrors
       } else {
-        dy <- dydx[1:length(y)]
-        dx <- dydx[(length(y)+1):length(dydx)]
+        dy <- yerrors[1:length(y)]
+        dx <- yerrors[(length(y)+1):length(serrors)]
       }
     }
     ## The user has specified either one, so we need to make sure that it is
     ## consistent.
     else {
       if (errormodel == 'yerrors' && ncol(bsamples) == length(dy)) {
-        dY <- 1.0 / dy
+        W <- 1.0 / dy
       } else if (errormodel == 'xyerrors' && ncol(bsamples) == length(dy) + length(dx)) {
-        dY <- 1.0 / c(dy, dx)
+        W <- 1.0 / c(dy, dx)
       } else {
         stop('You have explicitly passed `dy` and/or `dx`, but their combined length does not match the number of columns of the bootstrap samples.')
       }
@@ -346,23 +361,26 @@ bootstrap.nlsfit <- function(fn,
   }
 
   ## add original data as first row
-  bsamples <- rbind(Y, bsamples)
+  smatrix <- rbind(Y, smatrix)
+  
+  y_new <- c(y, p)
+  fn_new <- c(fn, par)
 
   ## define the chi-vector, the sum of squares of which has to be minimized
   ## the definitions depend on the errormodel and the use of covariance
   ## BUT it always has the same name
   if(errormodel == "yerrors"){
     if(useCov){
-      fitchi <- function(y, par, ...) { dY %*% (y - fn(par=par, x=x, ...)) }
+       fitchi <- function(y, par, ...) { W %*% (y_new - fn_new(par=par, x=x, ...)) }
     }else{
-      fitchi <- function(y, par, ...) { dY * (y - fn(par=par, x=x, ...)) }
+      fitchi <- function(y, par, ...) { W * (y_new - fn_new(par=par, x=x, ...)) }
     }
   }else{
     ipx <- length(par.Guess)-seq(nx-1,0)
     if(useCov){
-      fitchi <- function(y, par, ...) { dY %*% (y - c(fn(par=par[-ipx], x=par[ipx], ...), par[ipx])) }
+      fitchi <- function(y, par, ...) { W %*% (y - c(fn(par=par[-ipx], x=par[ipx], ...), par[ipx])) }
     }else{
-      fitchi <- function(y, par, ...) { dY * (y - c(fn(par=par[-ipx], x=par[ipx], ...), par[ipx])) }
+      fitchi <- function(y, par, ...) { W * (y - c(fn(par=par[-ipx], x=par[ipx], ...), par[ipx])) }
     }
   }
 
@@ -376,9 +394,9 @@ bootstrap.nlsfit <- function(fn,
     ## the format of gr has to be nrows=length(par), ncols=length(Y)
     if(errormodel == "yerrors"){
       if(useCov){
-        dfitchi <- function(par, ...) { -dY %*% gr(par=par, x=x, ...) }
+        dfitchi <- function(par, ...) { -W %*% gr(par=par, x=x, ...) }
       }else{
-        dfitchi <- function(par, ...) { -dY * gr(par=par, x=x, ...) }
+        dfitchi <- function(par, ...) { -W * gr(par=par, x=x, ...) }
       }
     }else{
       jacobian <- function(par, ...) {
@@ -387,9 +405,9 @@ bootstrap.nlsfit <- function(fn,
         return(cbind(df.dpar, df.dx))
       }
       if(useCov){
-        dfitchi <- function(par, ...) { -dY %*% jacobian(par, ...) }
+        dfitchi <- function(par, ...) { -W %*% jacobian(par, ...) }
       }else{
-        dfitchi <- function(par, ...) { -dY * jacobian(par, ...) }
+        dfitchi <- function(par, ...) { -W * jacobian(par, ...) }
       }
     }
     dfitchisqr <- function(y, par, ...) { 2 * crossprod(fitchi(y, par, ...), dfitchi(par, ...)) }
@@ -476,7 +494,7 @@ bootstrap.nlsfit <- function(fn,
               t=par.boot[rr, , drop=FALSE],
               se=errors,
               useCov=useCov,
-              invCovMatrix=dY,
+              invCovMatrix = W,
               Qval = 1 - pchisq(chisq, dof),
               chisqr = chisq,
               dof = dof,
