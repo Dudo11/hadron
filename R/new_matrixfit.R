@@ -390,6 +390,25 @@ new_matrixfit <- function(cf,
     model_object <- NParticleModel$new(cf$Time, parind, sign.vec, ov.sign.vec)
   }
   
+  if(model == 'n_particles') {
+    initial_guess = function(corr, summands, t1, t2){
+      t1p1 <- t1 + 1
+      t2p1 <- t2 + 1
+      par <- numeric(2*summands)
+      par[1] <- 0.2
+      for (i in 2:length(par)) {
+        if(i%%2==0){
+          par[i] <- 1
+        }
+        else {
+          par[i] <- i*0.2
+        }
+      }
+      return (par)
+    }
+    par.guess <- initial_guess(CF$Cor, 2, t1, t2)
+  }
+  
   if (missing(par.guess)) {
     par.guess <- model_object$initial_guess(CF$Cor, parlist, t1, t2)
   }
@@ -402,7 +421,7 @@ new_matrixfit <- function(cf,
                bsamples = cf$cf.tsboot$t[, ii],
                use.minpack.lm = fit.method == 'lm',
                error = cf$error_fn,
-               cov_fn = cf$cov_fn)
+               cov_fn = cf$cov_fn,...)
   
   if (useCov) {
     args$CovMatrix <- cf$cov_fn(cf$cf.tsboot$t[, ii])
