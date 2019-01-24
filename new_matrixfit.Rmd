@@ -57,9 +57,12 @@ shifted_corr4 <- takeTimeDiff.cf(samplecf_boot4) # Calculate the shifted correla
 samplecf_boot5 <- bootstrap.cf(corr5, boot.R = boot.R, boot.l = boot.l, seed = seed)
 shifted_corr5 <- takeTimeDiff.cf(samplecf_boot5) # Calculate the shifted correlator
 
-z1 <- new_matrixfit(shifted_corr5, 1, 4, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh')
-print(z1)
-print(z1$t[1,1])
+#z2 <- new_matrixfit(shifted_corr2, 1, 9, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh')
+p2 <- z2$t
+z3 <- new_matrixfit(shifted_corr3, 1, 5, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh')#, psamples = z2$t, p = p2)
+print(z3)
+#print(z3$t)
+#print(z3$t[1,1])
 # cat('\n')
 # print(z1$par)
 # print(z1$t0[1])
