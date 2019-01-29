@@ -4,7 +4,7 @@
 \alias{bootstrap.nlsfit}
 \title{Bootstrap a non-linear least-squares fit}
 \usage{
-bootstrap.nlsfit(fn, par.guess, y, x, p, bsamples, psamples, ..., dy, dx,
+bootstrap.nlsfit(fn, par.guess, y, x, bsamples, psamples, p, ..., dy, dx,
   CovMatrix, gr, dfn, use.minpack.lm = TRUE, parallel = FALSE,
   error = sd, cov_fn = cov)
 }
