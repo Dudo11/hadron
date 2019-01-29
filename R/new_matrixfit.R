@@ -251,6 +251,8 @@ new_matrixfit <- function(cf,
                           autoproceed = FALSE,
                           par.guess,
                           every,
+                          psamples,
+                          p,
                           ...
                           ) {
   stopifnot(inherits(cf, 'cf_meta'))
@@ -414,14 +416,17 @@ new_matrixfit <- function(cf,
   }
 
   args <- list(fn = model_object$prediction,
-               gr = model_object$prediction_jacobian,
+               #gr = model_object$prediction_jacobian,
                par.guess = par.guess,
                y = CF$Cor[ii],
                x = CF$t[ii],
                bsamples = cf$cf.tsboot$t[, ii],
                use.minpack.lm = fit.method == 'lm',
                error = cf$error_fn,
-               cov_fn = cf$cov_fn,...)
+               cov_fn = cf$cov_fn,
+               psamples = psamples,
+               p = p,
+               ...)
   
   if (useCov) {
     args$CovMatrix <- cf$cov_fn(cf$cf.tsboot$t[, ii])
