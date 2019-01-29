@@ -239,7 +239,8 @@ bootstrap.nlsfit <- function(fn,
                              y,
                              x,
                              bsamples,
-                             psamples, p,
+                             psamples,
+                             p,
                              ...,
                              dy,
                              dx,
@@ -255,8 +256,6 @@ bootstrap.nlsfit <- function(fn,
   stopifnot(!missing(par.guess))
   stopifnot(!missing(fn))
   stopifnot(!missing(bsamples))
-  stopifnot(!missing(psamples))
-  stopifnot(!missing(p))
   
   boot.R <- nrow(bsamples)
   useCov <- !missing(CovMatrix)
@@ -274,18 +273,22 @@ bootstrap.nlsfit <- function(fn,
   crr <- c(1:(boot.R+1))
   rr <- c(2:(boot.R+1))
   
-  y <- c(y, p)
-  print(p)
-  print(y)
-  bpsamples <- cbind(bsamples, psamples)
-  #print(bpsamples)
+  func <- function(par=par, x=x, ...) {return(fn(par=par, x=x, ...))}
+  
+  if(!missing(psamples) && !missing(p)){
+    y <- c(y, p)
+    func <- function(par=par, x=x, ...) {
+      return(c(fn(par=par, x=x, ...), par))
+    }
+    bsamples <- cbind(bsamples, psamples)
+  }
   
   ## cast y and dy to Y and dY, respectively
-  if (ncol(bpsamples) == length(y)) {
+  if (ncol(bsamples) == length(y)) {
     Y <- y
     par.Guess <- par.guess
     errormodel <- "yerrors"
-  } else if (ncol(bpsamples) == length(y) + length(x)) {
+  } else if (ncol(bsamples) == length(y) + length(x)) {
     Y <- c(y, x)
     par.Guess <- c(par.guess, x)
     errormodel <- "xyerrors"
@@ -332,7 +335,7 @@ bootstrap.nlsfit <- function(fn,
     ## The user did not specify the errors, therefore we simply compute them.
     if (missing(dx) && missing(dy)) {
       # dY <- 1.0 / dydx
-      dydx <- apply(bpsamples, 2, error)
+      dydx <- apply(bsamples, 2, error)
       dY <- 1.0 / dydx
       
       if (errormodel == 'yerrors') {
@@ -359,16 +362,16 @@ bootstrap.nlsfit <- function(fn,
   
   ## add original data as first row
   # bsamples <- rbind(Y, bsamples)
-  bpsamples <- rbind(Y, bpsamples)
+  bsamples <- rbind(Y, bsamples)
 
   ## define the chi-vector, the sum of squares of which has to be minimized
   ## the definitions depend on the errormodel and the use of covariance
   ## BUT it always has the same name
   if(errormodel == "yerrors"){
     if(useCov){
-      fitchi <- function(y, par, ...) { dY %*% (y - c(fn(par=par, x=x, ...),par) ) }
+      fitchi <- function(y, par, ...) { dY %*% ( y - func(par=par, x=x, ...) ) }
     }else{
-      fitchi <- function(y, par, ...) { dY * (y - c(fn(par=par, x=x, ...),par) ) }
+      fitchi <- function(y, par, ...) { dY * ( y - func(par=par, x=x, ...) ) }
     }
   }else{
     ipx <- length(par.Guess)-seq(nx-1,0)
@@ -447,7 +450,7 @@ bootstrap.nlsfit <- function(fn,
     my.lapply <- lapply
   }
   
-  boot.list <- my.lapply(crr, function(sample) { wrapper(y=bpsamples[sample,], par=first.res$par, boot_r = sample - 1, ...) })
+  boot.list <- my.lapply(crr, function(sample) { wrapper(y=bsamples[sample,], par=first.res$par, boot_r = sample - 1, ...) })
   
   par.boot <- do.call(rbind, lapply(boot.list, function (elem) elem$par))
   
@@ -483,7 +486,7 @@ bootstrap.nlsfit <- function(fn,
   
   res <- list(y=y, dy=dy, x=x, nx=nx,
               fn=fn, par.guess=par.guess, boot.R=boot.R,
-              bpsamples=bpsamples[rr, , drop=FALSE],
+              bsamples=bsamples[rr, , drop=FALSE],
               errormodel=errormodel,
               converged.boot = converged.boot,
               t0=par.boot[1, ],
