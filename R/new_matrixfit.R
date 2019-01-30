@@ -251,8 +251,7 @@ new_matrixfit <- function(cf,
                           autoproceed = FALSE,
                           par.guess,
                           every,
-                          psamples,
-                          p,
+                          priors,
                           ...
                           ) {
   stopifnot(inherits(cf, 'cf_meta'))
@@ -408,7 +407,7 @@ new_matrixfit <- function(cf,
       }
       return (par)
     }
-    par.guess <- initial_guess(CF$Cor, 2, t1, t2)
+    par.guess <- initial_guess(CF$Cor, summands = 2, t1, t2)
   }
   
   if (missing(par.guess)) {
@@ -424,8 +423,7 @@ new_matrixfit <- function(cf,
                use.minpack.lm = fit.method == 'lm',
                error = cf$error_fn,
                cov_fn = cf$cov_fn,
-               psamples = psamples,
-               p = p,
+               priors,
                ...)
   
   if (useCov) {
