@@ -4,7 +4,7 @@
 \alias{bootstrap.nlsfit}
 \title{Bootstrap a non-linear least-squares fit}
 \usage{
-bootstrap.nlsfit(fn, par.guess, y, x, bsamples, psamples, p, ..., dy, dx,
+bootstrap.nlsfit(fn, par.guess, y, x, bsamples, priors, ..., dy, dx,
   CovMatrix, gr, dfn, use.minpack.lm = TRUE, parallel = FALSE,
   error = sd, cov_fn = cov)
 }
@@ -29,6 +29,8 @@ numerical vector.}
 Must be provided as array of dimensions \code{c(boot.R, n)} with \code{n}
 equals to \code{length(y)} in case of 'yerrors' and For 'xyerrors' to
 \code{length(y) + length(x)}.}
+
+\item{priors}{list of the form list(psamples, p, param)}
 
 \item{...}{Additional parameters passed to \code{fn}, \code{gr} and \code{dfn}.}
 
