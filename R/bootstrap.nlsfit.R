@@ -277,6 +277,8 @@ bootstrap.nlsfit <- function(fn,
   y_aux <- y
   func <- function(par=par, x=x, ...) {return(fn(par=par, x=x, ...))}
   
+  ## If a list 'priors' is specified, modify the parameters y, func and bsamples
+  ## by adding p, param and psamples, respectively.
   if(!missing(priors)){
     y <- c(y, priors$p)
     func <- function(par=par, x=x, ...) {
