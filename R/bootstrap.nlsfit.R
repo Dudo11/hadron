@@ -186,6 +186,7 @@ parametric.nlsfit.cov <- function (fn, par.guess, boot.R, y, x, cov, ...) {
 #' @param error Function that takes a sample vector and returns the error
 #' estimate. This is a parameter in order to support different resampling
 #' methods like jackknife.
+#' @param priors list of the form list(psamples, p, param)
 #'
 #' @return
 #'  returns a list of class 'bootstrapfit'. It returns all input
@@ -239,8 +240,7 @@ bootstrap.nlsfit <- function(fn,
                              y,
                              x,
                              bsamples,
-                             psamples,
-                             p,
+                             priors,
                              ...,
                              dy,
                              dx,
@@ -273,23 +273,27 @@ bootstrap.nlsfit <- function(fn,
   crr <- c(1:(boot.R+1))
   rr <- c(2:(boot.R+1))
   
+  bsamples_aux <- bsamples
+  y_aux <- y
   func <- function(par=par, x=x, ...) {return(fn(par=par, x=x, ...))}
   
-  if(!missing(psamples) && !missing(p)){
-    y <- c(y, p)
+  if(!missing(priors)){
+    y <- c(y, priors$p)
     func <- function(par=par, x=x, ...) {
-      return(c(fn(par=par, x=x, ...), par))
+      return(c(fn(par, x, ...), priors$param))
     }
-    bsamples <- cbind(bsamples, psamples)
+    bsamples <- cbind(bsamples, priors$psamples)
   }
   
   ## cast y and dy to Y and dY, respectively
   if (ncol(bsamples) == length(y)) {
     Y <- y
+    Y_aux <- y_aux
     par.Guess <- par.guess
     errormodel <- "yerrors"
   } else if (ncol(bsamples) == length(y) + length(x)) {
     Y <- c(y, x)
+    Y_aux <- c(y_aux, x)
     par.Guess <- c(par.guess, x)
     errormodel <- "xyerrors"
   } else {
@@ -334,17 +338,21 @@ bootstrap.nlsfit <- function(fn,
   # else {
     ## The user did not specify the errors, therefore we simply compute them.
     if (missing(dx) && missing(dy)) {
-      # dY <- 1.0 / dydx
       dydx <- apply(bsamples, 2, error)
       dY <- 1.0 / dydx
       
+      dydx_aux <- apply(bsamples_aux, 2, error)
+      dY_aux <- 1.0 / dydx_aux
+      
       if (errormodel == 'yerrors') {
         dy <- dydx
+        dy_aux <- dydx_aux
       } else {
-        # dy <- dydx[1:length(y)]
-        # dx <- dydx[(length(y)+1):length(dydx)]
         dy <- dydx[1:length(y)]
         dx <- dydx[(length(y)+1):length(dydx)]
+        
+        dy_aux <- dydx_aux[1:length(y_aux)]
+        dx_aux <- dydx_aux[(length(y_aux)+1):length(dydx_aux)]
       }
     }
     ## The user has specified either one, so we need to make sure that it is
@@ -363,6 +371,7 @@ bootstrap.nlsfit <- function(fn,
   ## add original data as first row
   # bsamples <- rbind(Y, bsamples)
   bsamples <- rbind(Y, bsamples)
+  bsamples_aux <- rbind(Y_aux, bsamples_aux)
 
   ## define the chi-vector, the sum of squares of which has to be minimized
   ## the definitions depend on the errormodel and the use of covariance
@@ -484,7 +493,7 @@ bootstrap.nlsfit <- function(fn,
   
   errors <- apply(par.boot[rr, , drop=FALSE], 2, error, na.rm = TRUE)
   
-  res <- list(y=y, dy=dy, x=x, nx=nx,
+  res <- list(y=head(y,-2), dy=head(dy,-2), x=x, nx=nx,
               fn=fn, par.guess=par.guess, boot.R=boot.R,
               bsamples=bsamples[rr, , drop=FALSE],
               errormodel=errormodel,
