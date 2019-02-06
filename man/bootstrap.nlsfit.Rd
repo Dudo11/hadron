@@ -4,9 +4,10 @@
 \alias{bootstrap.nlsfit}
 \title{Bootstrap a non-linear least-squares fit}
 \usage{
-bootstrap.nlsfit(fn, par.guess, y, x, bsamples, priors, ..., dy, dx,
-  CovMatrix, gr, dfn, use.minpack.lm = TRUE, parallel = FALSE,
-  error = sd, cov_fn = cov)
+bootstrap.nlsfit(fn, par.guess, y, x, bsamples, priors = list(param =
+  c(), p = c(), psamples = c()), ..., dy, dx, CovMatrix, gr, dfn,
+  use.minpack.lm = TRUE, parallel = FALSE, error = sd,
+  cov_fn = cov, maxiter = 500)
 }
 \arguments{
 \item{fn}{\code{fn(par, x, ...)}. The (non-linear) function to be fitted to the
@@ -29,8 +30,6 @@ numerical vector.}
 Must be provided as array of dimensions \code{c(boot.R, n)} with \code{n}
 equals to \code{length(y)} in case of 'yerrors' and For 'xyerrors' to
 \code{length(y) + length(x)}.}
-
-\item{priors}{list of the form list(psamples, p, param)}
 
 \item{...}{Additional parameters passed to \code{fn}, \code{gr} and \code{dfn}.}
 
@@ -63,6 +62,9 @@ stable.}
 \item{error}{Function that takes a sample vector and returns the error
 estimate. This is a parameter in order to support different resampling
 methods like jackknife.}
+
+\item{maxiter}{integer. Maximum number of iterations that can be used in the
+optimization process.}
 }
 \value{
 returns a list of class 'bootstrapfit'. It returns all input
@@ -101,7 +103,7 @@ x <- c(1, 2, 3)
 dx <- c(0.1, 0.1, 0.1)
 boot.R <- 1500
 
-fn <- function (par, x, ...) par[1] + par[2] * x
+fn <- function (par, x, boot_r, ...) par[1] + par[2] * x
 
 ## Before we can use the fit with this data, we need to create bootstrap
 ## samples. We do not want to use the correlation matrix here. Note that you
@@ -112,6 +114,7 @@ head(bsamples)
 
 fit.result <- bootstrap.nlsfit(fn, c(1, 1), value, x, bsamples)
 summary(fit.result)
+plot(fit.result)
 
 }
 \seealso{
