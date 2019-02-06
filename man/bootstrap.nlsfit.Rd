@@ -5,9 +5,9 @@
 \title{Bootstrap a non-linear least-squares fit}
 \usage{
 bootstrap.nlsfit(fn, par.guess, y, x, bsamples, priors = list(param =
-  c(), p = c(), psamples = c()), ..., dy, dx, CovMatrix, gr, dfn,
-  use.minpack.lm = TRUE, parallel = FALSE, error = sd,
-  cov_fn = cov, maxiter = 500)
+  c(), p = c(), psamples = c()), msamples = c(), np = 1, ..., dy, dx,
+  CovMatrix, gr, dfn, use.minpack.lm = TRUE, parallel = FALSE,
+  error = sd, cov_fn = cov, maxiter = 500)
 }
 \arguments{
 \item{fn}{\code{fn(par, x, ...)}. The (non-linear) function to be fitted to the
@@ -30,6 +30,15 @@ numerical vector.}
 Must be provided as array of dimensions \code{c(boot.R, n)} with \code{n}
 equals to \code{length(y)} in case of 'yerrors' and For 'xyerrors' to
 \code{length(y) + length(x)}.}
+
+\item{priors}{list}
+
+\item{msamples}{vector of length \code{\length{boot.R}} containing the
+bootstrap samples of the mass. This is used in the calculation of the
+energie shifts.}
+
+\item{np}{index of the n-particle energy. This is used in the calculation of
+the energie shifts.}
 
 \item{...}{Additional parameters passed to \code{fn}, \code{gr} and \code{dfn}.}
 
