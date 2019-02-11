@@ -30,14 +30,14 @@ MatrixModel <- R6Class(
       if(is.na(par[1]) || is.nan(par[1]))
         par[1] <- 0.2
       ## the amplitudes we estimate from diagonal elements
-      for (i in 2:length(par)) {
-        j <- which(parlist[1, ] == (i-1) & parlist[2, ] == (i-1))
-        if (length(j) == 0) {
-          ##if(full.matrix) warning("one diagonal element does not appear in parlist\n")
-          j <- i-1
+        for (i in 2:length(par)) {
+          j <- which(parlist[1, ] == (i-1) & parlist[2, ] == (i-1))
+          if (length(j) == 0) {
+            ##if(full.matrix) warning("one diagonal element does not appear in parlist\n")
+            j <- i-1
+          }
+          par[i] <- sqrt(abs(corr[t1p1 + (j-1) * Thalfp1]) / 0.5 / exp(-par[1] * t1))
         }
-        par[i] <- sqrt(abs(corr[t1p1 + (j-1) * Thalfp1]) / 0.5 / exp(-par[1] * t1))
-      }
 
       return (par)
     },
@@ -251,7 +251,7 @@ new_matrixfit <- function(cf,
                           autoproceed = FALSE,
                           par.guess,
                           every,
-                          priors,
+                          priors = list(param = c(), p = c(), psamples = c()),
                           ...
                           ) {
   stopifnot(inherits(cf, 'cf_meta'))
@@ -396,24 +396,24 @@ new_matrixfit <- function(cf,
       t1p1 <- t1 + 1
       t2p1 <- t2 + 1
       par <- numeric(2*summands)
-      par[1] <- 0.2
-      for (i in 2:length(par)) {
-        if(i%%2==0){
-          par[i] <- 1
-        }
-        else {
-          par[i] <- i*0.2
-        }
-      }
+
+      par[1] <- 1.13
+      par[3] <- 0.68
+      par[5] <- 0.23
+      
+      par[2] <- 0.00001
+      par[4] <- 0.0000001
+      par[6] <- 0.0000001
+
       return (par)
     }
-    par.guess <- initial_guess(CF$Cor, summands = 2, t1, t2)
+    par.guess <- initial_guess(CF$Cor, summands = 3, t1, t2)
   }
   
   if (missing(par.guess)) {
     par.guess <- model_object$initial_guess(CF$Cor, parlist, t1, t2)
   }
-
+  
   args <- list(fn = model_object$prediction,
                #gr = model_object$prediction_jacobian,
                par.guess = par.guess,
@@ -423,11 +423,16 @@ new_matrixfit <- function(cf,
                use.minpack.lm = fit.method == 'lm',
                error = cf$error_fn,
                cov_fn = cf$cov_fn,
-               priors,
+               priors = priors,
                ...)
   
   if (useCov) {
-    args$CovMatrix <- cf$cov_fn(cf$cf.tsboot$t[, ii])
+    if(!missing(priors)){
+      args$CovMatrix <- cf$cov_fn(cbind(cf$cf.tsboot$t[, ii], priors$psamples))
+    }
+    else{
+      args$CovMatrix <- cf$cov_fn(cf$cf.tsboot$t[, ii])
+    }
   }
   
   res <- do.call(bootstrap.nlsfit, args)
