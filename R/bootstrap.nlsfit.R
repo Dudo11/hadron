@@ -298,7 +298,6 @@ bootstrap.nlsfit <- function(fn,
   }
   
   nx <- length(x)
-  grpriors <- c()
   
   ## If a list 'priors' is specified, modify the parameters y, func and bsamples
   ## by adding p, param and psamples, respectively.
@@ -306,16 +305,6 @@ bootstrap.nlsfit <- function(fn,
     Y <- c(Y, priors$p)
     y <- c(y, priors$p)
     bsamples <- cbind(bsamples, priors$psamples)
-    
-
-    npriors <- length(priors$param)
-    npar <- length(par.guess)
-    grpriors <- c()
-      
-    for (i in 1:npriors) {
-      aux <- t(c(rep(0, (priors$param[i] - 1)), 1, rep(0, (npar - priors$param[i]))))
-      grpriors <- rbind(grpriors, aux)
-    }
   }
   
   ## generate bootstrap samples if needed
@@ -400,6 +389,7 @@ bootstrap.nlsfit <- function(fn,
   }
   
   ## define the derivatives of chi and chi^2
+  
   if(missing(gr) || (errormodel == "xyerrors" && missing(dfn))){
     ## in case no derivative is known, the functions are set to NULL
     ## this is the default in the optimization functions anyway
@@ -408,6 +398,15 @@ bootstrap.nlsfit <- function(fn,
   }else{
     ## the format of gr has to be nrows=length(par), ncols=length(Y)
     if(errormodel == "yerrors"){
+      grpriors <- c()
+      if(is.null(priors$param)==FALSE && is.null(priors$p)==FALSE && is.null(priors$psamples)==FALSE){
+        npriors <- length(priors$param)
+        npar <- length(par.guess)
+        for (i in 1:npriors) {
+          aux <- t(c(rep(0, (priors$param[i] - 1)), 1, rep(0, (npar - priors$param[i]))))
+          grpriors <- rbind(grpriors, aux)
+        }
+      }
       if(useCov){
         dfitchi <- function(par, ...) { -W %*% rbind(gr(par=par, x=x, ...), grpriors) }
       }else{
@@ -500,7 +499,7 @@ bootstrap.nlsfit <- function(fn,
   
   errors <- apply(par.boot[rr, , drop=FALSE], 2, error, na.rm = TRUE)
   
-  if(!missing(priors)){
+  if(is.null(priors$param)==FALSE && is.null(priors$p)==FALSE && is.null(priors$psamples)==FALSE){
     lp <- length(priors$p)
     y <- head(y,-lp)
     dy <- head(dy,-lp)
