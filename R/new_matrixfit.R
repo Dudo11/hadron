@@ -396,18 +396,18 @@ new_matrixfit <- function(cf,
       t1p1 <- t1 + 1
       t2p1 <- t2 + 1
       par <- numeric(2*summands)
-
-      par[1] <- 1.13
-      par[3] <- 0.68
-      par[5] <- 0.23
       
-      par[2] <- 0.00001
-      par[4] <- 0.0000001
-      par[6] <- 0.0000001
-
+      par[1] <- 0.65
+      par[3] <- 0.22
+      #par[5] <- 0.23
+      
+      par[2] <- 0.0001
+      par[4] <- 0.00004
+      #par[6] <- 0.0000001
+      
       return (par)
     }
-    par.guess <- initial_guess(CF$Cor, summands = 3, t1, t2)
+    par.guess <- initial_guess(CF$Cor, summands = 2, t1, t2)
   }
   
   if (missing(par.guess)) {
@@ -415,7 +415,7 @@ new_matrixfit <- function(cf,
   }
   
   args <- list(fn = model_object$prediction,
-               #gr = model_object$prediction_jacobian,
+               gr = model_object$prediction_jacobian,
                par.guess = par.guess,
                y = CF$Cor[ii],
                x = CF$t[ii],
