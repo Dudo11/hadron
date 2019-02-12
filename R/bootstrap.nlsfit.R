@@ -389,7 +389,6 @@ bootstrap.nlsfit <- function(fn,
   }
   
   ## define the derivatives of chi and chi^2
-  
   if(missing(gr) || (errormodel == "xyerrors" && missing(dfn))){
     ## in case no derivative is known, the functions are set to NULL
     ## this is the default in the optimization functions anyway
