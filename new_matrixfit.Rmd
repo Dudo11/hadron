@@ -66,21 +66,21 @@ shifted_corr5 <- takeTimeDiff.cf(samplecf_boot5) # Calculate the shifted correla
 # print(c2)
 # plot(c2)
 
-priors3 <- list(param = 3, p = (c2$t0[1] - c1$t0[1]), psamples = (c2$t[,1] - c1$t[,1]))
-c3 <- new_matrixfit(shifted_corr3, 1, 23, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = TRUE, priors = priors3, m = c1$t[,1], np=3)
-print(c3)
-plot(c3)
+# priors3 <- list(param = 3, p = (c2$t0[1] - c1$t0[1]), psamples = (c2$t[,1] - c1$t[,1]))
+# c3 <- new_matrixfit(shifted_corr3, 1, 23, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = TRUE, priors = priors3, m = c1$t[,1], np=3)
+# print(c3)
+# plot(c3)
 
 # priors4 <- list(param = 3, p = (c3$t0[1] - c1$t0[1]), psamples = (c3$t[,1] - c1$t[,1]))
-# c4 <- new_matrixfit(shifted_corr4, 1, 23, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', priors = priors4, useCov = 1, m = c1$t[,1], np=4)
+# c4 <- new_matrixfit(shifted_corr4, 1, 23, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = TRUE, priors = priors4, m = c1$t[,1], np=4)
 # print(c4)
 # plot(c4)
 
 
-# priors5 <- list(param = c(3,5), p = c((c4$t0[1] - c1$t0[1]),(c3$t0[1] - c2$t0[1])), psamples = cbind((c4$t[,1] - c1$t[,1]),(c3$t[,1] - c2$t[,1])))
-# c5 <- new_matrixfit(shifted_corr5, 1, 23, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', priors = priors5, useCov = TRUE, m = c1$t[,1], np=5)
-# print(c5)
-# plot(c5)
+priors5 <- list(param = c(3,5), p = c((c4$t0[1] - c1$t0[1]),(c3$t0[1] - c2$t0[1])), psamples = cbind((c4$t[,1] - c1$t[,1]),(c3$t[,1] - c2$t[,1])))
+c5 <- new_matrixfit(shifted_corr5, 1, 23, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = TRUE, priors = priors5, m = c1$t[,1], np=5)
+print(c5)
+plot(c5)
 
 # c5test <- new_matrixfit(shifted_corr5, 1, 23, fit.method = 'lm', model = 'single', sym.vec = 'sinh')
 # print(c5test)
