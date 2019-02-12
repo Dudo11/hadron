@@ -353,6 +353,7 @@ bootstrap.nlsfit <- function(fn,
         dx <- dydx[(length(y)+1):length(dydx)]
       }
     }
+    
     ## The user has specified either one, so we need to make sure that it is
     ## consistent.
     else {
@@ -379,12 +380,12 @@ bootstrap.nlsfit <- function(fn,
       fitchi <- function(y, par, ...) { W * (y - c(fn(par=par, x=x, ...), par[priors$param])) }
     }
   }else{
-  ipx <- length(par.Guess)-seq(nx-1,0)
-  if(useCov){
-    fitchi <- function(y, par, ...) { W %*% (y - c(fn(par=par[-ipx], x=par[ipx], ...), par[ipx])) }
-  }else{
-    fitchi <- function(y, par, ...) { W * (y - c(fn(par=par[-ipx], x=par[ipx], ...), par[ipx])) }
-  }
+    ipx <- length(par.Guess)-seq(nx-1,0)
+    if(useCov){
+      fitchi <- function(y, par, ...) { W %*% (y - c(fn(par=par[-ipx], x=par[ipx], ...), par[ipx])) }
+    }else{
+      fitchi <- function(y, par, ...) { W * (y - c(fn(par=par[-ipx], x=par[ipx], ...), par[ipx])) }
+    }
   }
   
   ## define the derivatives of chi and chi^2
@@ -397,7 +398,20 @@ bootstrap.nlsfit <- function(fn,
     ## the format of gr has to be nrows=length(par), ncols=length(Y)
     if(errormodel == "yerrors"){
       if(useCov){
-        dfitchi <- function(par, ...) { -W %*% gr(par=par, x=x, ...) }
+        if(!missing(priors)){
+          npriors <- length(priors$param)
+          npar <- length(par.guess)
+          
+          grpriors <- c()
+          for (i in 1:npriors) {
+            aux <- t(c(rep(0, (priors$param[i] - 1)), 1, rep(0, (npar - priors$param[i]))))
+            grpriors <- rbind(grpriors, aux)
+          }
+          dfitchi <- function(par, ...) { -W %*% rbind(gr(par=par, x=x, ...), grpriors) }
+        }
+        else{
+          dfitchi <- function(par, ...) { -W %*% gr(par=par, x=x, ...) }
+        }
       }else{
         dfitchi <- function(par, ...) { -W * gr(par=par, x=x, ...) }
       }
