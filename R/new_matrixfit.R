@@ -398,11 +398,10 @@ new_matrixfit <- function(cf,
       par <- numeric(2*summands)
       
       par[1] <- 0.65
+      par[2] <- 0.001
       par[3] <- 0.22
-      #par[5] <- 0.23
-      
-      par[2] <- 0.0001
       par[4] <- 0.00004
+      #par[5] <- 0.23
       #par[6] <- 0.0000001
       
       return (par)
