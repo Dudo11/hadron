@@ -379,6 +379,7 @@ new_matrixfit <- function(cf,
   ## perform the bootstrap non-linear least-squares fit (NLS fit):
   
   if (model == 'single') {
+    if(!missing(priors)) {stop('In the single model you must not specify priors!')}
     model_object <- SingleModel$new(cf$Time, parind, sign.vec, ov.sign.vec)
   } else if (model == 'shifted') {
     stopifnot(inherits(cf, 'cf_shifted'))
@@ -397,16 +398,16 @@ new_matrixfit <- function(cf,
       t2p1 <- t2 + 1
       par <- numeric(2*summands)
       
-      par[1] <- 0.65
-      par[2] <- 0.001
-      par[3] <- 0.22
-      par[4] <- 0.00004
-      #par[5] <- 0.23
-      #par[6] <- 0.0000001
+      par[1] <- 1.13
+      par[2] <- 0.00004
+      par[3] <- 0.68
+      par[4] <- 0.0000001
+      par[5] <- 0.23
+      par[6] <- 0.0000001
       
       return (par)
     }
-    par.guess <- initial_guess(CF$Cor, summands = 2, t1, t2)
+    par.guess <- initial_guess(CF$Cor, summands = 3, t1, t2)
   }
   
   if (missing(par.guess)) {
