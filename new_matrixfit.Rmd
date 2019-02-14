@@ -1,7 +1,6 @@
-
-
 ```{r setup}
 devtools::load_all()
+library(ggplot2)
 ```
 
 ```{r}
@@ -16,7 +15,7 @@ seed <- 1234
 #==============================#
 
 read <- function(n_phi) {
-  corr <- readtextcf(paste0('/home/schlage/Master/R/correlators_',n_phi,'_phi_phi4p.tsv'), T = 48, skip = 4) # Hier muss angepasst werden!
+  corr <- readtextcf(paste0('/home/schlage/Master/R/correlators_',n_phi,'_phi_phi4p.tsv'), T = 24, skip = 4) # Hier muss angepasst werden!
   return(corr)
 }
 
@@ -38,8 +37,6 @@ save(uw3, file = 'uw3.Rdata')
 ```
 
 ```{r}
-library(ggplot2)
-
 samplecf_boot1 <- bootstrap.cf(corr1, boot.R = boot.R, boot.l = boot.l, seed = seed)
 shifted_corr1 <- takeTimeDiff.cf(samplecf_boot1) # Calculate the shifted correlator
 
@@ -57,30 +54,57 @@ shifted_corr5 <- takeTimeDiff.cf(samplecf_boot5) # Calculate the shifted correla
 ```
 
 ```{r}
+# d1 <- new_matrixfit(shifted_corr1, 1, 11, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = FALSE)
+# print(d1)
+# pdf('corr1_T24L6.pdf')
+# plot(d1, xlab="t", ylab="C_1 (t)", col="red", col.line = "black", log = "y", lwd = 1.4, cex = 1.4, cex.lab = 1.4, cex.axis = 1.3)
+# dev.off()
+
+# d2 <- new_matrixfit(shifted_corr2, 1, 11, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = FALSE)
+# print(d2)
+# pdf('corr2_T24L6.pdf')
+# plot(d2, xlab="t", ylab="C_2 (t)", col="red", col.line = "black", log = "y", lwd = 1.4, cex = 1.4, cex.lab = 1.4, cex.axis = 1.3)
+# dev.off()
+
+#priors3 <- list(param = 3, p = (d2$t0[1] - d1$t0[1]), psamples = (d2$t[,1] - d1$t[,1]))
+d3 <- new_matrixfit(shifted_corr3, 1, 11, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = TRUE, priors = priors3, m = c1$t[,1], np=3)
+print(d3)
+pdf('corr3_T24L6.pdf')
+plot(d3, xlab="t", ylab="C_3 (t)", col="red", log = "y")
+dev.off()
 
 # c1 <- new_matrixfit(shifted_corr1, 1, 23, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = TRUE)
 # print(c1)
-# plot(c1)
+# pdf('corr1_T48L14.pdf')
+# plot(c1, xlab="t", ylab="C_1 (t)", col="red", col.line = "black", log = "y", lwd = 1.4, cex = 1.4, cex.lab = 1.4, cex.axis = 1.3)
+# dev.off()
 
 # c2 <- new_matrixfit(shifted_corr2, 1, 23, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = TRUE, m = c1$t[,1], np=2)
 # print(c2)
-# plot(c2)
+# pdf('corr2_T48L14.pdf')
+# plot(c2, xlab="t", ylab="C_2 (t)", col="red", col.line = "black", log = "y", lwd = 1.4, cex = 1.4, cex.lab = 1.4, cex.axis = 1.3)
+# dev.off()
 
 # priors3 <- list(param = 3, p = (c2$t0[1] - c1$t0[1]), psamples = (c2$t[,1] - c1$t[,1]))
 # c3 <- new_matrixfit(shifted_corr3, 1, 23, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = TRUE, priors = priors3, m = c1$t[,1], np=3)
 # print(c3)
-# plot(c3)
+# pdf('corr3_T48L14.pdf')
+# plot(c3, xlab="t", ylab="C_3 (t)", col="red", col.line = "black", log = "y", lwd = 1.4, cex = 1.4, cex.lab = 1.4, cex.axis = 1.3)
+# dev.off()
 
 # priors4 <- list(param = 3, p = (c3$t0[1] - c1$t0[1]), psamples = (c3$t[,1] - c1$t[,1]))
 # c4 <- new_matrixfit(shifted_corr4, 1, 23, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = TRUE, priors = priors4, m = c1$t[,1], np=4)
 # print(c4)
-# plot(c4)
+# pdf('corr4_T48L14.pdf')
+# plot(c4, xlab="t", ylab="C_4 (t)", col="red", col.line = "black", log = "y", lwd = 1.4, cex = 1.4, cex.lab = 1.4, cex.axis = 1.3)
+# dev.off()
 
-
-priors5 <- list(param = c(3,5), p = c((c4$t0[1] - c1$t0[1]),(c3$t0[1] - c2$t0[1])), psamples = cbind((c4$t[,1] - c1$t[,1]),(c3$t[,1] - c2$t[,1])))
-c5 <- new_matrixfit(shifted_corr5, 1, 23, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = TRUE, priors = priors5, m = c1$t[,1], np=5)
-print(c5)
-plot(c5)
+# priors5 <- list(param = c(3,5), p = c((c4$t0[1] - c1$t0[1]),(c3$t0[1] - c2$t0[1])), psamples = cbind((c4$t[,1] - c1$t[,1]),(c3$t[,1] - c2$t[,1])))
+# c5 <- new_matrixfit(shifted_corr5, 1, 23, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = TRUE, priors = priors5, m = c1$t[,1], np=5)
+# print(c5)
+# pdf('corr5_T48L14.pdf')
+# plot(c5, xlab="t", ylab="C_5 (t)", col="red", col.line = "black", log = "y", lwd = 1.4, cex = 1.4, cex.lab = 1.4, cex.axis = 1.3)
+# dev.off()
 
 # c5test <- new_matrixfit(shifted_corr5, 1, 23, fit.method = 'lm', model = 'single', sym.vec = 'sinh')
 # print(c5test)
