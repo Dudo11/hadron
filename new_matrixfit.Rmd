@@ -67,11 +67,13 @@ shifted_corr5 <- takeTimeDiff.cf(samplecf_boot5) # Calculate the shifted correla
 # dev.off()
 
 #priors3 <- list(param = 3, p = (d2$t0[1] - d1$t0[1]), psamples = (d2$t[,1] - d1$t[,1]))
-d3 <- new_matrixfit(shifted_corr3, 1, 11, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = TRUE, priors = priors3, m = c1$t[,1], np=3)
-print(d3)
-pdf('corr3_T24L6.pdf')
-plot(d3, xlab="t", ylab="C_3 (t)", col="red", log = "y")
-dev.off()
+# d3 <- new_matrixfit(shifted_corr3, 1, 11, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = TRUE, priors = priors3, m = d1$t[,1], np=3)
+# print(d3)
+# pdf('corr3_T24L6.pdf')
+# plot(d3, xlab="t", ylab="C_3 (t)", col="red", log = "y")
+# dev.off()
+
+calculate.energy.shift(psamples = c2$t[,1], msamples = c1$t[,1], n=2)
 
 # c1 <- new_matrixfit(shifted_corr1, 1, 23, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = TRUE)
 # print(c1)
