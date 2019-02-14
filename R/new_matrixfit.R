@@ -398,16 +398,16 @@ new_matrixfit <- function(cf,
       t2p1 <- t2 + 1
       par <- numeric(2*summands)
       
-      par[1] <- 1.13
-      par[2] <- 0.00004
-      par[3] <- 0.68
-      par[4] <- 0.0000001
-      par[5] <- 0.23
-      par[6] <- 0.0000001
+      par[1] <- 0.98
+      par[2] <- 0.04
+      par[3] <- 0.36
+      par[4] <- 0.002
+      #par[5] <- 0.23
+      #par[6] <- 0.0000001
       
       return (par)
     }
-    par.guess <- initial_guess(CF$Cor, summands = 3, t1, t2)
+    par.guess <- initial_guess(CF$Cor, summands = 2, t1, t2)
   }
   
   if (missing(par.guess)) {
