@@ -169,11 +169,6 @@ parametric.nlsfit.cov <- function (fn, par.guess, boot.R, y, x, cov, ...) {
 #' equals to \code{length(y)} in case of 'yerrors' and For 'xyerrors' to
 #' \code{length(y) + length(x)}.
 #' @param priors list
-#' @param msamples vector of length \code{\length{boot.R}} containing the
-#' bootstrap samples of the mass. This is used in the calculation of the
-#' energie shifts.
-#' @param np index of the n-particle energy. This is used in the calculation of
-#' the energie shifts.
 #' @param ... Additional parameters passed to `fn`, `gr` and `dfn`.
 #' @param dy,dx Numeric vector. Errors of the dependent and independent
 #' variable, respectively. These do not need to be specified as they can be
@@ -249,8 +244,6 @@ bootstrap.nlsfit <- function(fn,
                              x,
                              bsamples,
                              priors = list(param = c(), p = c(), psamples = c()),
-                             msamples = c(),
-                             np = 1,
                              ...,
                              dy,
                              dx,
@@ -502,18 +495,6 @@ bootstrap.nlsfit <- function(fn,
     lp <- length(priors$p)
     y <- head(y,-lp)
     dy <- head(dy,-lp)
-  }
-  
-  ## Calculate the energy shifts \Delta E_n in the case of n particle correlators.
-  if(np != 1){
-    Enp <- par.boot[rr, 1, drop=FALSE]
-    DeltaE <- apply(X = as.matrix(Enp - np * msamples), MARGIN = 2, FUN = mean)
-    dDeltaE <- apply(X = as.matrix(Enp - np * msamples), MARGIN = 2, FUN = error)
-    cat("\n energy shifts\n")
-    print(DeltaE)
-    cat("\n errors on energy shifts\n")
-    print(dDeltaE)
-    cat("\n")
   }
   
   res <- list(y=y, dy=dy, x=x, nx=nx,
