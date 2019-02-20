@@ -392,24 +392,6 @@ new_matrixfit <- function(cf,
     model_object <- NParticleModel$new(cf$Time, parind, sign.vec, ov.sign.vec)
   }
 
-  if(model == 'n_particles') {
-    initial_guess = function(corr, summands, t1, t2){
-      t1p1 <- t1 + 1
-      t2p1 <- t2 + 1
-      par <- numeric(2*summands)
-      
-      par[1] <- 0.991
-      par[2] <- 0.002
-      par[3] <- 0.497
-      par[4] <- 0.00007
-      #par[5] <- 0.23
-      #par[6] <- 0.0000001
-
-      return (par)
-    }
-    par.guess <- initial_guess(CF$Cor, summands = 2, t1, t2)
-  }
-
   if (missing(par.guess)) {
     par.guess <- model_object$initial_guess(CF$Cor, parlist, t1, t2)
   }
