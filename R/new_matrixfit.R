@@ -398,10 +398,10 @@ new_matrixfit <- function(cf,
       t2p1 <- t2 + 1
       par <- numeric(2*summands)
       
-      par[1] <- 0.98
-      par[2] <- 0.04
-      par[3] <- 0.36
-      par[4] <- 0.002
+      par[1] <- 0.991
+      par[2] <- 0.002
+      par[3] <- 0.497
+      par[4] <- 0.00007
       #par[5] <- 0.23
       #par[6] <- 0.0000001
 

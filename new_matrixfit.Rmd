@@ -1,6 +1,8 @@
 ```{r setup}
 devtools::load_all()
 library(ggplot2)
+library(latex2exp)
+library(package = "sfsmisc")
 ```
 
 ```{r}
@@ -15,7 +17,8 @@ seed <- 1234
 #==============================#
 
 read <- function(n_phi) {
-  corr <- readtextcf(paste0('/home/schlage/Master/R/correlators_',n_phi,'_phi_phi4p.tsv'), T = 24, skip = 4) # Hier muss angepasst werden!
+  corr <- readtextcf(paste0('/home/schlage/Master/Master_Rmd_ana/corr_T48L10_thr8_190217/correlators_',n_phi,'_phi_phi4p.tsv'), T = 48, skip = 4)
+  #corr <- readtextcf(paste0('/home/schlage/Master/R/correlators_',n_phi,'_phi_phi4p.tsv'), T = 96, skip = 4) # Hier muss angepasst werden!
   return(corr)
 }
 
@@ -34,26 +37,129 @@ uw2 <- uwerr.cf(corr2)
 save(uw2, file = 'uw2.Rdata')
 uw3 <- uwerr.cf(corr3)
 save(uw3, file = 'uw3.Rdata')
-```
 
-```{r}
 samplecf_boot1 <- bootstrap.cf(corr1, boot.R = boot.R, boot.l = boot.l, seed = seed)
 shifted_corr1 <- takeTimeDiff.cf(samplecf_boot1) # Calculate the shifted correlator
 
-samplecf_boot2 <- bootstrap.cf(corr2, boot.R = boot.R, boot.l = boot.l, seed = seed)
-shifted_corr2 <- takeTimeDiff.cf(samplecf_boot2) # Calculate the shifted correlator
-
-samplecf_boot3 <- bootstrap.cf(corr3, boot.R = boot.R, boot.l = boot.l, seed = seed)
-shifted_corr3 <- takeTimeDiff.cf(samplecf_boot3) # Calculate the shifted correlator
-
-samplecf_boot4 <- bootstrap.cf(corr4, boot.R = boot.R, boot.l = boot.l, seed = seed)
-shifted_corr4 <- takeTimeDiff.cf(samplecf_boot4) # Calculate the shifted correlator
-
-samplecf_boot5 <- bootstrap.cf(corr5, boot.R = boot.R, boot.l = boot.l, seed = seed)
-shifted_corr5 <- takeTimeDiff.cf(samplecf_boot5) # Calculate the shifted correlator
+ samplecf_boot2 <- bootstrap.cf(corr2, boot.R = boot.R, boot.l = boot.l, seed = seed)
+ shifted_corr2 <- takeTimeDiff.cf(samplecf_boot2) # Calculate the shifted correlator
+ 
+ samplecf_boot3 <- bootstrap.cf(corr3, boot.R = boot.R, boot.l = boot.l, seed = seed)
+ shifted_corr3 <- takeTimeDiff.cf(samplecf_boot3) # Calculate the shifted correlator
+ 
+ samplecf_boot4 <- bootstrap.cf(corr4, boot.R = boot.R, boot.l = boot.l, seed = seed)
+ shifted_corr4 <- takeTimeDiff.cf(samplecf_boot4) # Calculate the shifted correlator
+ 
+ samplecf_boot5 <- bootstrap.cf(corr5, boot.R = boot.R, boot.l = boot.l, seed = seed)
+ shifted_corr5 <- takeTimeDiff.cf(samplecf_boot5) # Calculate the shifted correlator
 ```
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ```{r}
+## MASTER ANALYSIS:
+
+# c1_T48L10 <- new_matrixfit(samplecf_boot1, 1, 23, fit.method = 'lm', model = 'single', sym.vec = 'cosh', useCov = TRUE, par.guess = c(0.22,0.17))
+# print(c1_T48L10)
+# #pdf('/home/schlage/Master/Master_Rmd_ana/Master_Plots_Final/corr1_T48L10.pdf')
+# plot(c1_T48L10, xlab=TeX("$\\t$"), ylab=TeX("$\\C_1 (t)$"),  col="red", col.line = "black", log = "y", lwd = 1.6, cex = 1.6, cex.lab = 1.6, cex.axis = 1.8, font.lab = 2, xaxt = "n", yaxt = "n", mgp=c(2.3, 1, 0))
+# sfsmisc::eaxis(side=2)   # Y-Achse
+# eaxis(side=1)
+# legend("topright", legend = "T = 48, L = 10     ", cex = 1.35, inset = c(0.1, 0.1))
+# dev.off()
+
+# c2_T48L10 <- new_matrixfit(shifted_corr2, 1, 19, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = TRUE)#, par.guess = c(0.46,0.02))
+# print(c2_T48L10)
+# #pdf('/home/schlage/Master/Master_Rmd_ana/Master_Plots_Final/corr2_T48L10.pdf')
+# plot(c2_T48L10, xlab=TeX("$\\t$"), ylab=TeX("$\\C_2 (t)$"),  col="red", col.line = "black", log = "y", lwd = 1.6, cex = 1.6, cex.lab = 1.6, cex.axis = 1.8, font.lab = 2, xaxt = "n", yaxt = "n", mgp=c(2.3, 1, 0))
+# sfsmisc::eaxis(side=2)   # Y-Achse
+# eaxis(side=1)
+# legend("topright", legend = "T = 48, L = 10     ", cex = 1.35, inset = c(0.1, 0.1))
+# dev.off()
+
+# priors3_T48L10 <- list(param = 3, p = (c2_T48L10$t0[1] - c1_T48L10$t0[1]), psamples = (c2_T48L10$t[,1] - c1_T48L10$t[,1]))
+# c3_T48L10 <- new_matrixfit(shifted_corr3, 1, 23, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = TRUE, priors = priors3_T48L10)
+# print(c3_T48L10)
+# #pdf('/home/schlage/Master/Master_Rmd_ana/Master_Plots_Final/corr3_T48L10.pdf')
+# plot(c3_T48L10, xlab=TeX("$\\t$"), ylab=TeX("$\\C_3 (t)$"),  col="red", col.line = "black", log = "y", lwd = 1.6, cex = 1.6, cex.lab = 1.6, cex.axis = 1.8, font.lab = 2, xaxt = "n", yaxt = "n", mgp=c(2.3, 1, 0))
+# sfsmisc::eaxis(side=2)   # Y-Achse
+# eaxis(side=1)
+# legend("topright", legend = "T = 48, L = 10     ", cex = 1.35, inset = c(0.1, 0.1))
+# dev.off()
+
+priors4_T48L10 <- list(param = 3, p = (c3_T48L10$t0[1] - c1_T48L10$t0[1]), psamples = (c3_T48L10$t[,1] - c1_T48L10$t[,1]))
+c4_T48L10 <- new_matrixfit(shifted_corr4, 1, 23, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = TRUE, priors = priors4_T48L10)
+print(c4_T48L10)
+pdf('/home/schlage/Master/Master_Rmd_ana/Master_Plots_Final/corr4_T48L10.pdf')
+plot(c4_T48L10, xlab=TeX("$\\t$"), ylab=TeX("$\\C_4 (t)$"),  col="red", col.line = "black", log = "y", lwd = 1.6, cex = 1.6, cex.lab = 1.6, cex.axis = 1.8, font.lab = 2, xaxt = "n", yaxt = "n", mgp=c(2.3, 1, 0))
+sfsmisc::eaxis(side=2)   # Y-Achse
+eaxis(side=1)
+legend("topright", legend = "T = 48, L = 10     ", cex = 1.35, inset = c(0.1, 0.1))
+dev.off()
+
+# priors5_T48L10 <- list(param = c(3,5), p = c((c4_T48L10$t0[1] - c1_T48L10$t0[1]),(c3_T48L10$t0[1] - c2_T48L10$t0[1])), psamples = cbind((c4_T48L10$t[,1] - c1_T48L10$t[,1]),(c3_T48L10$t[,1] - c2_T48L10$t[,1])))
+# c5_T48L10 <- new_matrixfit(shifted_corr5, 1, 23, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = TRUE, priors = priors5_T48L10)
+# print(c5_T48L10)
+# #pdf('/home/schlage/Master/Master_Rmd_ana/Master_Plots_Final/corr5_T48L10.pdf')
+# plot(c5_T48L10, xlab=TeX("$\\t$"), ylab=TeX("$\\C_5 (t)$"), mgp=c(2.3,1,0), col="red", col.line = "black", log = "y", lwd = 1.5, cex = 1.5, cex.lab = 1.5, cex.axis = 1.5, font.lab = 2)
+# #dev.off()
+
+
+
+
+
+
+# E2shift24 <- calculate.energy.shift(psamples = d2$t[,1], msamples = rep(d1$t[,1],4), n=2, print.samples = TRUE)
+# E2shift48 <- calculate.energy.shift(psamples = c2$t[,1], msamples = rep(c1$t[,1],4), n=2, print.samples = TRUE)
+# #m <- cbind(E2shift24, E2shift48)
+# #Eshsamples <- matrix(c()) 
+
+# matrix <- cbind(c(0.0679, 0.0668, 0.0687, 0.0677, 0.0669), c(0.0325, 0.0351, 0.0330, 0.0335, 0.0351), c(0.0196, 0.0195, 0.0194, 0.0196, 0.0199), c(0.0177, 0.0176, 0.0178, 0.0175, 0.0178), c(0.0127, 0.0125, 0.0126, 0.0128, 0.0128), c(0.0018, 0.0017, 0.00188, 0.0019, 0.00189))
+# 
+# yaux = c(0.0679,0.0325,0.0196,0.0177,0.0127,0.0018)
+# laux <- c(7,12,14,16,18,20)
+# 
+# Eshift_fit_test <- fit.scattering.length(bsamples = matrix, y=yaux, lvec=laux, l1=2, l2=6, fit.method = 'lm', n = 2, M = -4.9, ain = c(-15,12.8), useCov = FALSE)
+# print(Eshift_fit_test)
+# plot(Eshift_fit_test)
+
+# test3 <- new_matrixfit(shifted_corr3, 1, 47, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = TRUE)
+# print(test3)
+#pdf('corr1_T96L24niko.pdf')
+# df <- data.frame(x = e1$x, y = e1$y, dy = e1$dy)
+# ggplot(df, aes(x = x, y = y)) +
+#   geom_point() +
+#   geom_errorbar(aes(ymin = y - dy, ymax = y + dy)) +
+#   scale_y_log10() +
+#   theme_light()
+# plot(test3, xlab="t", ylab="C_1 (t)", col="red", col.line = "black", log = "y", lwd = 1.4, cex = 1.4, cex.lab = 1.4, cex.axis = 1.3)
+#dev.off()
+
+# f1 <- new_matrixfit(shifted_corr1, 1, 23, fit.method = 'lm', model = 'single', sym.vec = 'sinh', useCov = TRUE)
+# print(f1)
+# plot(f1, log = "y")
+# pdf('corr1_T48L14niko.pdf')
+#  # df <- data.frame(x = f1$x, y = f1$y, dy = f1$dy)
+#  # ggplot(df, aes(x = x, y = y)) +
+#  #   geom_point() +
+#  #   geom_errorbar(aes(ymin = y - dy, ymax = y + dy)) +
+#  #   scale_y_log10() +
+#  #   theme_light()
+# plot(f1, xlab="t", ylab="C_1 (t)", col="red", col.line = "black", log = "y", lwd = 1.4, cex = 1.4, cex.lab = 1.4, cex.axis = 1.3)
+# dev.off()
+
 # d1 <- new_matrixfit(shifted_corr1, 1, 11, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = FALSE)
 # print(d1)
 # pdf('corr1_T24L6.pdf')
@@ -73,7 +179,7 @@ shifted_corr5 <- takeTimeDiff.cf(samplecf_boot5) # Calculate the shifted correla
 # plot(d3, xlab="t", ylab="C_3 (t)", col="red", log = "y")
 # dev.off()
 
-calculate.energy.shift(psamples = c2$t[,1], msamples = c1$t[,1], n=2)
+##calculate.energy.shift(psamples = c5$t[,1], msamples = rep(c1$t[,1],4), n=5)
 
 # c1 <- new_matrixfit(shifted_corr1, 1, 23, fit.method = 'lm', model = 'n_particles', sym.vec = 'sinh', useCov = TRUE)
 # print(c1)
@@ -164,4 +270,3 @@ calculate.energy.shift(psamples = c2$t[,1], msamples = c1$t[,1], n=2)
 #    scale_y_log10()
 
 ```
-
