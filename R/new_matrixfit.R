@@ -22,7 +22,7 @@ MatrixModel <- R6Class(
       t1p1 <- t1 + 1
       t2p1 <- t2 + 1
       Thalfp1 <- (self$time_extent / 2) + 1
-      
+
       par <- numeric(max(self$parind))
       j <- which(parlist[1, ] == 1 & parlist[2, ] == 1)
       par[1] <- invcosh(corr[t1p1 + (j-1) * Thalfp1] / corr[t1p1 + (j-1) * Thalfp1 + 1], t = t1p1, self$time_extent)
@@ -65,19 +65,19 @@ SingleModel <- R6Class(
         (-x * exp(-par[1] * x) -
            (self$time_extent-x) * self$sign_vec * exp(-par[1] * (self$time_extent-x)))
       res <- zp
-      
+
       ## Derivatives with respect to the amplitudes.
       for (i in 2:length(par)) {
         zp1 <- rep(0, length(zp))
         j <- which(self$parind[, 1] == i)
         zp1[j] <- self$ov_sign_vec * 0.5 * par[self$parind[j, 2]] *
           (exp(-par[1] * x[j]) + self$sign_vec[j] * exp(-par[1] * (self$time_extent-x[j])))
-        
+
         zp2 <- rep(0, length(zp))
         j <- which(self$parind[, 2] == i)
         zp2[j] <- self$ov_sign_vec * 0.5 * par[self$parind[j, 1]] *
           (exp(-par[1] * x[j]) + self$sign_vec[j] * exp(-par[1] * (self$time_extent-x[j])))
-        
+
         res <- cbind(res, zp1 + zp2)
       }
 
@@ -85,7 +85,7 @@ SingleModel <- R6Class(
       stopifnot(ncol(res) == length(par))
 
       dimnames(res) <- NULL
-      
+
       return (res)
     }
   )
@@ -106,17 +106,17 @@ ShiftedModel <- R6Class(
     },
     prediction_jacobian = function (par, x, ...) {
       xx <- x - self$delta_t/2
-      
+
       res <- matrix(0.0, nrow = length(x), ncol = length(par))
-      
+
       ## Derivative with respect to the mass, `par[1]`.
       zp <- self$ov_sign_vec * par[self$parind[, 1]] * par[self$parind[, 2]] *
         (-xx * exp(-par[1] * xx) + (self$time_extent - xx) * self$sign_vec *
            exp(-par[1] * (self$time_extent - xx)))
       stopifnot(length(zp) == nrow(res))
-      
+
       res[, 1] <- zp
-      
+
       ## Derivatives with respect to the amplitudes.
       for (i in 2:length(par)) {
           zp1 <- rep(0, length(zp))##
@@ -124,19 +124,19 @@ ShiftedModel <- R6Class(
           zp1[j] <- self$ov_sign_vec * par[self$parind[j, 2]] *
             (exp(-par[1] * xx[j]) - self$sign_vec[j] *
             exp(-par[1] * (self$time_extent - xx[j])))
-        
+
           zp2 <- rep(0, length(zp))##
           j <- which(self$parind[, 2] == i)
           zp2[j] <- self$ov_sign_vec * par[self$parind[j, 1]] *
             (exp(-par[1] * xx[j]) - self$sign_vec[j] *
             exp(-par[1] * (self$time_extent - xx[j])))
-          
+
           stopifnot(length(zp1) == nrow(res))
           stopifnot(length(zp2) == nrow(res))
-        
+
           res[, i] <- (zp1 + zp2)
       }
-      
+
       return (res)
     },
     delta_t = NA
@@ -162,7 +162,7 @@ TwoStateModel <- R6Class(
       par[1] <- abs(par[1])
       par[2] <- abs(par[2])
       xx <- x - self$reference_time
-      
+
       res <- array(0.0, dim = c(length(x), length(par)))
       res[, 1] <- -xx * exp(-par[1] * xx) * (par[3] + (1 - par[3]) * exp(-par[2] * xx))
       res[, 2] <- -exp(-par[1] * xx) * (1 - par[3]) * xx * exp(-par[2] * xx)
@@ -256,39 +256,39 @@ new_matrixfit <- function(cf,
                           ) {
   stopifnot(inherits(cf, 'cf_meta'))
   stopifnot(inherits(cf, 'cf_boot'))
-  
+
   if (model == 'pc') {
     stopifnot(inherits(cf, 'cf_principal_correlator'))
   }
-  
+
   stopifnot(cf$symmetrised == TRUE)
-  
+
   t1p1 <- t1 + 1
   t2p1 <- t2 + 1
-  
+
   N <- dim(cf$cf)[1]
   Thalfp1 <- cf$Time/2 + 1
   t <- c(0:(cf$Time/2))
-  
+
   deltat <- 1
   if(model == "shifted" && any(names(cf) == "deltat")) {
     deltat <- cf$deltat
   }
-  
+
   ## This is the number of correlators in cf
   if (!is.null(dim(cf$cf)))
     mSize <- dim(cf$cf)[2] / Thalfp1
   else
     mSize <- dim(cf$cf.tsboot$t)[2] / Thalfp1
-  
+
   if (model == 'pc' && mSize != 1) {
     stop('For model pc only a 1x1 matrix is allowed.')
   }
-  
+
   if (missing(parlist)) {
     parlist <- make_parlist(mSize)
   }
-  
+
   if (missing(sym.vec)) {
     if (mSize == 1) {
       sym.vec <- c("cosh")
@@ -302,7 +302,7 @@ new_matrixfit <- function(cf,
       stop("sym.vec is missing and no default is available for this cf size!")
     }
   }
-  
+
   if (missing(neg.vec)) {
     if (mSize == 1) {
       neg.vec <- c(1)
@@ -316,7 +316,7 @@ new_matrixfit <- function(cf,
       stop("neg.vec is missing and no default is available for this cf size!")
     }
   }
-  
+
   ## some sanity checks
   if (min(parlist) <= 0) {
     stop("Elements of parlist must be all > 0!")
@@ -326,7 +326,7 @@ new_matrixfit <- function(cf,
       stop("not all parameters are used in the fit!")
     }
   }
-  
+
   if (dim(parlist)[2] != mSize) {
     cat(mSize, dim(parlist)[2], "\n")
     stop("parlist has not the correct length! Aborting! Use e.g. extractSingleCor.cf or c to bring cf to correct number of observables\n")
@@ -337,9 +337,9 @@ new_matrixfit <- function(cf,
   if (length(neg.vec) != mSize){
     stop("neg.vec does not have the correct length! Aborting\n")
   }
-  
+
   CF <- data.frame(t = t, Cor = cf$cf0, Err = apply(cf$cf.tsboot$t, 2, cf$error_fn))
-  
+
   ## index vector for timeslices to be fitted
   ii <- c((t1p1):(t2p1))
   if (mSize > 1) {
@@ -355,7 +355,7 @@ new_matrixfit <- function(cf,
   if (!missing(every)) {
     ii <- ii[ii %% every == 0]
   }
-  
+
   ## parind is the index vector for the matrix elements
   len_t <- length(t1:t2)
   parind <- make_parind(parlist = parlist, length_time = len_t, summands = 1)
@@ -363,10 +363,10 @@ new_matrixfit <- function(cf,
   sign.vec <- rep(1, times = len_t)
   ## ov.sign.vec indicates the overall sign
   ov.sign.vec <- rep(1, times = len_t)
-  
+
   for (i in 1:mSize) {
     #parind[((i-1)*len_t+1):(i*len_t), ] <- t(array(parlist[, i] + 1, dim = c(2, len_t)))
-    
+
     if (sym.vec[i] == "sinh")
       sign.vec[((i-1)*len_t+1):(i*len_t)] <- -1
     else if (sym.vec[i] == "exp")
@@ -377,7 +377,7 @@ new_matrixfit <- function(cf,
   }
 
   ## perform the bootstrap non-linear least-squares fit (NLS fit):
-  
+
   if (model == 'single') {
     if(!missing(priors)) {stop('In the single model you must not specify priors!')}
     model_object <- SingleModel$new(cf$Time, parind, sign.vec, ov.sign.vec)
@@ -391,7 +391,7 @@ new_matrixfit <- function(cf,
     stopifnot(cf$nrObs == 1)
     model_object <- NParticleModel$new(cf$Time, parind, sign.vec, ov.sign.vec)
   }
-  
+
   if(model == 'n_particles') {
     initial_guess = function(corr, summands, t1, t2){
       t1p1 <- t1 + 1
@@ -404,16 +404,16 @@ new_matrixfit <- function(cf,
       par[4] <- 0.002
       #par[5] <- 0.23
       #par[6] <- 0.0000001
-      
+
       return (par)
     }
     par.guess <- initial_guess(CF$Cor, summands = 2, t1, t2)
   }
-  
+
   if (missing(par.guess)) {
     par.guess <- model_object$initial_guess(CF$Cor, parlist, t1, t2)
   }
-  
+
   args <- list(fn = model_object$prediction,
                gr = model_object$prediction_jacobian,
                par.guess = par.guess,
@@ -425,7 +425,7 @@ new_matrixfit <- function(cf,
                cov_fn = cf$cov_fn,
                priors = priors,
                ...)
-  
+
   if (useCov) {
     if(!missing(priors)){
       args$CovMatrix <- cf$cov_fn(cbind(cf$cf.tsboot$t[, ii], priors$psamples))
@@ -434,17 +434,17 @@ new_matrixfit <- function(cf,
       args$CovMatrix <- cf$cov_fn(cf$cf.tsboot$t[, ii])
     }
   }
-  
+
   res <- do.call(bootstrap.nlsfit, args)
 
   ## Some fit models have parameters in the absolute value. This means that in
   ## `res` they can be negative and we need to let the model fix that.
   res$t0 <- model_object$post_process_par(res$t0)
-  
+
   old_dim = dim(res$t)
   res$t <- t(apply(res$t, 1, model_object$post_process_par))
   stopifnot(all(old_dim == dim(res$t)))
-  
+
   return (res)
 }
 
@@ -459,7 +459,7 @@ make_parlist <- function (corr_matrix_size) {
   row1 <- rep(1:n, each = n)
   row2 <- rep(1:n, times = n)
   parlist_matrix <- matrix(cbind(row1, row2), nrow = 2, ncol = n * n, byrow = TRUE)
-  
+
   return(parlist_matrix)
 }
 
