@@ -14,3 +14,4 @@ hadron.Rcheck
 hadron_*.tar.gz
 man/.Rhistory
 src/symbols.rds
+new_matrixfit.Rmd
