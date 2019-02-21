@@ -379,7 +379,6 @@ new_matrixfit <- function(cf,
   ## perform the bootstrap non-linear least-squares fit (NLS fit):
 
   if (model == 'single') {
-    if(!missing(priors)) {stop('In the single model you must not specify priors!')}
     model_object <- SingleModel$new(cf$Time, parind, sign.vec, ov.sign.vec)
   } else if (model == 'shifted') {
     stopifnot(inherits(cf, 'cf_shifted'))
