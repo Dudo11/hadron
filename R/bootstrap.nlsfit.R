@@ -399,7 +399,7 @@ bootstrap.nlsfit <- function(fn,
     ## the format of gr has to be nrows=length(par), ncols=length(Y)
     if(errormodel == "yerrors"){
       grpriors <- c()
-      if(!(is.null(priors$param))){
+      if(is.null(priors$param) == FALSE){
         npriors <- length(priors$param)
         npar <- length(par.guess)
         for (i in 1:npriors) {
