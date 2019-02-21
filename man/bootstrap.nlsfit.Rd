@@ -36,7 +36,7 @@ The vector \code{param} includes the indices of the fit-parameters that are
 to be constrained and the vector \code{p} the corresponding paramater-values
 (e.g. known from a previous fit). The list element \code{psamples} contains the
 corresponding bootstrap samples and is a matrix of dimensions
-\code{(boot.R, length(p))})}
+\code{(boot.R, length(p))}.}
 
 \item{...}{Additional parameters passed to \code{fn}, \code{gr} and \code{dfn}.}
 

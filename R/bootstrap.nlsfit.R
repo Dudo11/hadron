@@ -173,7 +173,7 @@ parametric.nlsfit.cov <- function (fn, par.guess, boot.R, y, x, cov, ...) {
 #' to be constrained and the vector `p` the corresponding paramater-values
 #' (e.g. known from a previous fit). The list element `psamples` contains the
 #' corresponding bootstrap samples and is a matrix of dimensions
-#' \code{(boot.R, length(p))})
+#' \code{(boot.R, length(p))}.
 #' @param ... Additional parameters passed to `fn`, `gr` and `dfn`.
 #' @param dy,dx Numeric vector. Errors of the dependent and independent
 #' variable, respectively. These do not need to be specified as they can be
