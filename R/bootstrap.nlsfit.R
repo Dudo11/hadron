@@ -173,7 +173,7 @@ parametric.nlsfit.cov <- function (fn, par.guess, boot.R, y, x, cov, ...) {
 #' to be constrained and the vector `p` the corresponding paramater-values
 #' (e.g. known from a previous fit). The list element `psamples` contains the
 #' corresponding bootstrap samples and is a matrix of dimensions
-#' \code{(boot.R, length(p))}.
+#' \code{(boot.R, length(param))}.
 #' @param ... Additional parameters passed to `fn`, `gr` and `dfn`.
 #' @param dy,dx Numeric vector. Errors of the dependent and independent
 #' variable, respectively. These do not need to be specified as they can be
@@ -265,6 +265,9 @@ bootstrap.nlsfit <- function(fn,
   stopifnot(!missing(par.guess))
   stopifnot(!missing(fn))
   stopifnot(!missing(bsamples))
+  stopifnot(length(priors$param) == length(priors$p) &&
+            length(priors$param) == ncol(as.matrix(priors$psamples)) &&
+            length(priors$p) == ncol(as.matrix(priors$psamples)) )
 
   boot.R <- nrow(bsamples)
   useCov <- !missing(CovMatrix)
@@ -396,7 +399,7 @@ bootstrap.nlsfit <- function(fn,
     ## the format of gr has to be nrows=length(par), ncols=length(Y)
     if(errormodel == "yerrors"){
       grpriors <- c()
-      if(is.null(priors$param)==FALSE && is.null(priors$p)==FALSE && is.null(priors$psamples)==FALSE){
+      if(!(is.null(priors$param))){
         npriors <- length(priors$param)
         npar <- length(par.guess)
         for (i in 1:npriors) {
