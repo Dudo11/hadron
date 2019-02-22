@@ -260,15 +260,22 @@ bootstrap.nlsfit <- function(fn,
                              error = sd,
                              cov_fn = cov,
                              maxiter = 500) {
+  if(!is.null(priors$psamples)){
+    ncolps <- ncol(as.matrix(priors$psamples))
+  }else{
+    ncolps <- length(priors$psamples)
+  }
+  dimps <- dim(priors$psamples)
   stopifnot(!missing(y))
   stopifnot(!missing(x))
   stopifnot(!missing(par.guess))
   stopifnot(!missing(fn))
   stopifnot(!missing(bsamples))
-  stopifnot(length(priors$param) == length(priors$p) &&
-            length(priors$param) == ncol(as.matrix(priors$psamples)) &&
-            length(priors$p) == ncol(as.matrix(priors$psamples)) )
-
+  stopifnot( length(priors$param) == length(priors$p) &&
+             length(priors$param) == ncolps &&
+             length(priors$p) == ncolps )
+  
+  
   boot.R <- nrow(bsamples)
   useCov <- !missing(CovMatrix)
 
