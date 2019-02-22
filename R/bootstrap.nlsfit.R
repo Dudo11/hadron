@@ -415,7 +415,8 @@ bootstrap.nlsfit <- function(fn,
         npriors <- length(priors$param)
         npar <- length(par.guess)
         for (i in 1:npriors) {
-          aux <- t(c(rep(0, (priors$param[i] - 1)), 1, rep(0, (npar - priors$param[i]))))
+          aux <- rep(0, npar)
+          aux[priors$param[i]] <- 1
           grpriors <- rbind(grpriors, aux)
         }
       }
