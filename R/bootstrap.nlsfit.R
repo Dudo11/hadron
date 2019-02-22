@@ -271,7 +271,9 @@ bootstrap.nlsfit <- function(fn,
   stopifnot(!missing(par.guess))
   stopifnot(!missing(fn))
   stopifnot(!missing(bsamples))
-  stopifnot(is.vector(priors$param))
+  if(!is.null(priors$param)){
+    stopifnot(is.vector(priors$param))
+  }
   stopifnot( length(priors$param) == length(priors$p) &&
              length(priors$param) == ncolps &&
              length(priors$p) == ncolps )
