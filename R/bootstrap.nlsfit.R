@@ -344,26 +344,28 @@ bootstrap.nlsfit <- function(fn,
       W <- t(InvCovMatrix)
     }
 
-    dydx <- 1.0 / diag(W)
+    ## Depending on the fit (yerrors or xyerrors model, fit with or without prior), the dimensions of
+    ## InvCovMatrix differ and thus also err
+    err <- 1.0 / diag(W)
 
     if (errormodel == 'yerrors') {
-      dy <- dydx
+      dy <- err
     } else {
-      dy <- dydx[1:length(y)]
-      dx <- dydx[(length(y)+1):length(dydx)]
+      dy <- err[1:length(y)]
+      dx <- err[(length(y)+1):length(err)]
     }
   }
   else {
     ## The user did not specify the errors, therefore we simply compute them.
     if (missing(dx) && missing(dy)) {
-      dydx <- apply(bsamples, 2, error)
-      W <- 1.0 / dydx
+      err <- apply(bsamples, 2, error)
+      W <- 1.0 / err
 
       if (errormodel == 'yerrors') {
-        dy <- dydx
+        dy <- err
       } else {
-        dy <- dydx[1:length(y)]
-        dx <- dydx[(length(y)+1):length(dydx)]
+        dy <- err[1:length(y)]
+        dx <- err[(length(y)+1):length(err)]
       }
     }
 
